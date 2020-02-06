@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+import compileall
+import os.path
+from git import Repo
+import inspect,os,sys
+
+filename = inspect.getframeinfo(inspect.currentframe()).filename
+string_path = os.path.dirname(os.path.abspath(filename))
+list_of_py_files = []
+
+
+def file_to_path(local_string_path):
+    global list_of_py_files
+    entries = os.listdir(local_string_path)
+    for i in entries:
+        if '.py' in i or (os.path.isdir(local_string_path + '\\' + i) and '.git' not in i):
+            if os.path.isdir(local_string_path + '\\' + i):
+                list_of_py_files += file_to_path(local_string_path + '\\' + i)
+            else:
+                list_of_py_files.append(local_string_path + '\\' + i)
+    return list_of_py_files
+
+
+list_path = string_path.split('\\')
+string_path = '\\'.join(list_path[:-3])
+output = set(file_to_path(string_path))
+for one_file in output:
+    compileall.compile_file(one_file, quiet=True)
+	
+filename = inspect.getframeinfo(inspect.currentframe()).filename
+string_path = str(os.path.dirname(os.path.abspath(filename)))
+list_path = string_path.split('\\')
+string_path = '\\'.join(list_path[:-3])
+print(string_path)
+repo = Repo(string_path)
+branch = repo.active_branch
+branch_name_string = branch.name
+if branch_name_string == 'master':
+	print('You can not push in master brach')
+	sys.exit(1)
+else: 
+	sys.exit(0)
+	
+    
